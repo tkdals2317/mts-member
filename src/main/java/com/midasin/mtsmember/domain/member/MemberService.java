@@ -3,6 +3,8 @@ package com.midasin.mtsmember.domain.member;
 import com.midasin.mtsmember.domain.member.rqrs.MemberDto;
 import com.midasin.mtsmember.domain.role.Role;
 import com.midasin.mtsmember.domain.role.enums.RoleType;
+import com.midasin.mtsmember.infra.CustomException;
+import com.midasin.mtsmember.infra.ErrorMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,26 +21,18 @@ public class MemberService {
 
     @Transactional
     public MemberDto createMember(MemberDto memberDto) {
-        Assert.notNull(memberDto, "적합하지 않은 파라미터");
+        Assert.notNull(memberDto, ErrorMessage.INVALID_PARAM.name());
 
-        // 중복 체크(인증 서버로 하면 Redis에서 조회하는 로직으로 변경
-        validateDuplicateEmail(memberDto.getEmail());
+        if (checkEmailDuplicate(memberDto.getEmail())) {
+            throw new CustomException(ErrorMessage.EXIST_EMAIL);
+        }
 
         final Member savedMember = memberRepository.save(memberDto.toEntity());
+
         final Role role = new Role(RoleType.ROLE_USER);
         savedMember.grantRoles(role);
 
         return MemberDto.from(savedMember);
-    }
-
-    private void validateDuplicateEmail(String email) {
-        Assert.notNull(email, "적합하지 않은 파라미터");
-
-        Optional<Member> findMember = memberRepository.findByEmail(email);
-
-        if (findMember.isPresent()) {
-            throw new RuntimeException("이미 가입되어 있는 아이디 입니다.");
-        }
     }
 
     /**
