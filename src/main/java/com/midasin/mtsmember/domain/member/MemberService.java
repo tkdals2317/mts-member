@@ -5,6 +5,7 @@ import com.midasin.mtsmember.domain.role.Role;
 import com.midasin.mtsmember.domain.role.enums.RoleType;
 import com.midasin.mtsmember.infra.CustomException;
 import com.midasin.mtsmember.infra.ErrorMessage;
+import com.midasin.mtsmember.utils.PasswordEncryptUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,5 +50,27 @@ public class MemberService {
      */
     public boolean checkNickNameDuplicate(String nickName) {
         return memberRepository.existsByNickName(nickName);
+    }
+
+    /**
+     * 로그인 인증 토큰 발급 시 사용자 조회
+     * @param email
+     * @param password
+     * @return
+     */
+    public MemberDto findAuthMember(String email, String password) {
+        Assert.notNull(email, ErrorMessage.INVALID_PARAM.name());
+        Assert.notNull(password, ErrorMessage.INVALID_PARAM.name());
+
+        final Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorMessage.NOT_EXIST_MEMBER));
+
+        final String savedPassword = member.getPassword();
+
+        if (!PasswordEncryptUtil.match(savedPassword, password)) {
+            throw new CustomException(ErrorMessage.INVALID_PASSWORD);
+        }
+
+        return MemberDto.from(member);
     }
 }

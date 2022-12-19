@@ -1,9 +1,11 @@
 package com.midasin.mtsmember.domain.member;
 
 import com.midasin.mtsmember.domain.member.rqrs.MemberDto;
+import com.midasin.mtsmember.infra.BaseController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,12 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotNull;
+
 
 @Tag(name = "회원 컨트롤러")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1")
-public class MemberController {
+public class MemberController implements BaseController {
 
     private final MemberService memberService;
     
@@ -37,5 +41,19 @@ public class MemberController {
     public boolean checkNickNameDuplicate(@PathVariable String nickname) {
         return memberService.checkNickNameDuplicate(nickname);
     }
+
+    @Operation(summary = "사용자 인증 정보 조회")
+    @GetMapping(value = "/auth/{email}/{password}")
+    public MemberDto findAuthMember(@PathVariable String email, @PathVariable String password){
+        return memberService.findAuthMember(email, password);
+    }
+
+    @Operation(summary = "사용자 프로필 조회")
+    @GetMapping(value = "/profile")
+    public MemberDto findMemberProfile(@NotNull Authentication authentication) {
+        return null;
+    }
+
+
 
 }

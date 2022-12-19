@@ -1,6 +1,7 @@
 package com.midasin.mtsmember.infra.adviser;
 
 import com.midasin.mtsmember.infra.CustomException;
+import com.midasin.mtsmember.infra.ErrorDto;
 import com.midasin.mtsmember.infra.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
